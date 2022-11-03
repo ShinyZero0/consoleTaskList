@@ -23,6 +23,7 @@ namespace consoleTaskList
             Console.Clear();
             while (isRunning == true) 
             {
+                Console.Clear();
                 Console.WriteLine("Список задач версия 1.0 Copyright Павел Мельник 11-А \nСписок команд:\n1. Показать активные задачи\n2. Создать новую задачу\n0. Выйти из программы и сохранить задачи");
                 char input = Console.ReadKey().KeyChar;
                 switch (input)
@@ -35,37 +36,35 @@ namespace consoleTaskList
                         }
                         else
                         {
-                            Console.WriteLine("Ваш список задач пуст");
-                            ReturnToMain();
+                            ReturnToMain("emptylist");
                         }
                     break;
 
                     case '2':
                     {
                         bool success = true;
-                        Console.Clear();
                         do 
                         {
-                            
+                            Console.Clear();
                             Console.WriteLine("\tСоздание новой задачи\nВведите название для новой задачи:");
                             string newTaskName = Console.ReadLine();
                             Console.WriteLine("Введите описание для новой задачи:");
                             string newTaskContent = Console.ReadLine();
                             if (newTaskName != "" && newTaskContent != "")
                             {
+                                Console.Clear();
                                 CreateTask(taskList, newTaskName, newTaskContent);
-                                Console.WriteLine("Задча успешно создана");
                                 success = true;
-                                ReturnToMain();
+                                ReturnToMain("success");
                             }
                             else
                             {
                                 Console.Clear();
-                                Console.WriteLine("Пожалуйста, заполните все поля. Чтобы отменить создание задачи, введите 0");
-                                if (Console.ReadLine() == "0")
+                                Console.WriteLine("Пожалуйста, заполните все поля. Чтобы отменить создание задачи, нажмите Escape");
+                                if (Console.ReadKey().Key.ToString() == "scape")
                                 {
                                     Console.Clear();
-                                    break;
+                                    success = true;
                                 }
                                 else Console.Clear();                            
                             }
@@ -122,24 +121,28 @@ namespace consoleTaskList
         }
         public static void ReturnToMain()
         {
+            Console.Clear();
             Console.WriteLine("Нажмите любую клавишу, чтобы вернуться назад");
             Console.ReadKey();
             Console.Clear();
         }
         public static void ReturnToMain(string arg)
         {
+            string text = "";
             switch (arg)
             {
-                case "silent":
-                    Console.ReadKey();
-                    Console.Clear();
-                break;
                 case "success":
-                    Console.WriteLine("Операция успешно завершена! Нажмите любую клавишу, чтобы вернуться назад");
-                    Console.ReadKey();
-                    Console.Clear();
+                    text = "Операция успешно завершена! Нажмите любую клавишу, чтобы вернуться назад";
                 break;
+                case "emptylist":
+                    text = "Список задач пуст. Нажмите любую клавишу, чтобы вернуться назад";
+                break;
+                default: break;
             }
+            Console.Clear();
+            Console.WriteLine(text);
+            Console.ReadKey();
+            Console.Clear();
         }
         public static void SelectAction(int taskNum)
         {
@@ -209,15 +212,21 @@ namespace consoleTaskList
                 Console.WriteLine("Введите номер задачи, чтобы с ней взаимодействовать");
                 Console.WriteLine("Введите 0, чтобы вернуться назад");
                 string inputTaskNum = Console.ReadLine();
-                int intInputTaskNum = Convert.ToInt32(inputTaskNum);
-                if (inputTaskNum == "0") 
+                bool ParseAble = int.TryParse(inputTaskNum, out int parsedInputTaskNum);
+                if (ParseAble == true) 
                 {
-                    end = true;
-                    Console.Clear();
-                }
-                else if (intInputTaskNum > 0 && intInputTaskNum <= taskList.tasks.Count)
-                {
-                    SelectAction(intInputTaskNum - 1);
+                    if (parsedInputTaskNum == 0)
+                    {
+                        end = true;
+                    }
+                    else if (parsedInputTaskNum > 0 && parsedInputTaskNum <= taskList.tasks.Count)
+                    {
+                        SelectAction(parsedInputTaskNum - 1);
+                    }
+                    else
+                    {
+                        end = ReturnOrCancel();
+                    }
                 }
                 else
                 {
@@ -227,9 +236,9 @@ namespace consoleTaskList
         }
         public static void EditTaskName(task _task)
         {
-            bool end = true;
+            bool end = false;
             Console.Clear();
-            do {
+            while (end == false) {
             Console.WriteLine("\tРедактирование названия\n");
             Console.WriteLine($"Текущее название: {_task.name}");
             Console.WriteLine("Введите новое название");
@@ -237,13 +246,13 @@ namespace consoleTaskList
             if (newProp != "")
             {
                 _task.name = newProp;
-                ReturnToMain("success");
+                end = true;
             }
             else 
             {
                 end = ReturnOrCancel();
             }
-            } while (end == false);
+            }
         }
         public static void EditTaskContent(task _task)
         {
@@ -309,8 +318,9 @@ namespace consoleTaskList
         public static bool ReturnOrCancel()
         {
             Console.Clear();
-            Console.WriteLine("Пожалуйста, введите возможное значение. Чтобы отменить, нажмите 0. Чтобы вернуться назад, нажмите любую клавишу");
-            if (Console.ReadKey().KeyChar == '0')
+            Console.WriteLine("Пожалуйста, введите возможное значение. Чтобы отменить процесс, нажмите Escape. Чтобы вернуться назад, нажмите любую другую клавишу");
+            string key = Console.ReadKey().Key.ToString();
+            if (key == "Escape" )
             {
                 Console.Clear();
                 return true;
